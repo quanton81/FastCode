@@ -20,21 +20,64 @@ namespace FastCode.Controllers
             _context = context;
         }
 
+        private async Task<List<DipendenteView>> GetAllDipendenti()
+        {
+            var dipendenti = from dipendente in _context.Dipendente
+                   join manager in _context.Dipendente on dipendente.Manager equals manager.Id into mann
+                   from subman in mann.DefaultIfEmpty()
+                   select new DipendenteView
+                   {
+                       Id = dipendente.Id,
+                       Nome = dipendente.Nome,
+                       Matricola = dipendente.Matricola,
+                       Manager = subman.Nome ?? null
+                   };
+
+            return await dipendenti.ToListAsync();
+        }
+
         // GET: Dipendentes
         public async Task<IActionResult> Index(string matricola)
         {
-            var dipendenti = from dipendente in _context.Dipendente
-                join manager in _context.Dipendente on dipendente.Manager equals manager.Id into mann
-                from subman in mann.DefaultIfEmpty()
-                select new DipendenteView
-                {
-                    Id = dipendente.Id,
-                    Nome = dipendente.Nome,
-                    Matricola = dipendente.Matricola,
-                    Manager = subman.Nome ?? null
-                };
 
-            return View(await dipendenti.ToListAsync());
+            if(string.IsNullOrEmpty(matricola))
+            {
+                return View(await GetAllDipendenti());
+            }
+            else
+            {
+                string cteQuery = @"
+with cte as
+(
+  select Id, Nome, Matricola, Manager
+  from   Dipendente
+  where  Matricola = {0}
+
+  union all
+
+  select t.Id, t.Nome, t.Matricola, t.Manager
+  from   cte c                                   
+  inner join Dipendente t 
+  on c.Manager = t.Id
+)
+select *
+from cte where Manager is null";
+
+                var cteDipendenti = _context.Dipendente.FromSqlRaw(cteQuery, matricola).AsEnumerable();
+
+                if(cteDipendenti.Any())
+                {
+                    return View(cteDipendenti.Select(dipendente => new DipendenteView
+                    {
+                        Id = dipendente.Id,
+                        Nome = dipendente.Nome,
+                        Matricola = dipendente.Matricola,
+                        Manager = null
+                    }).ToList());
+                }
+
+                return View();
+            }
         }
 
         // GET: Dipendentes/Details/5

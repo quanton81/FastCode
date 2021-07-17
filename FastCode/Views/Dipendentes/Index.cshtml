@@ -16,7 +16,7 @@
 	</p>
 </form>
 <table class="table">
-    <thead>
+	<thead>
 		<tr>
 			<th>
 				@Html.DisplayNameFor(model => model.Nome)
@@ -29,25 +29,29 @@
 			</th>
 			<th></th>
 		</tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-		<tr>
-			<td>
-				@Html.DisplayFor(modelItem => item.Nome)
-			</td>
-			<td>
-				@Html.DisplayFor(modelItem => item.Matricola)
-			</td>
-			<td>
-				@Html.DisplayFor(modelItem => item.Manager)
-			</td>
-			<td>
-				<a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-				<a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-				<a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-			</td>
-		</tr>
-}
-    </tbody>
+	</thead>
+	@if (Model != null)
+	{
+		<tbody>
+			@foreach (var item in Model)
+			{
+				<tr>
+					<td>
+						@Html.DisplayFor(modelItem => item.Nome)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Matricola)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Manager)
+					</td>
+					<td>
+						<a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+						<a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+						<a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	}
 </table>
